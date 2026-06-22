@@ -186,3 +186,4 @@ print(len(df_validas))
 
 print("\nQuantidade de colunas:")
 print(len(df_validas.columns))
+

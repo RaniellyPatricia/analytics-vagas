@@ -378,3 +378,83 @@ Até o momento, foram adotadas as seguintes decisões:
 * analisar a distribuição das categorias;
 * extrair competências técnicas e comportamentais;
 * avaliar posteriormente a viabilidade de um modelo simples de classificação.
+
+## 16. Teste de extensão da paginação
+
+Após a validação das três primeiras páginas, foi desenvolvido um novo script com o objetivo de verificar até onde a paginação da ProgramaThor continuava apresentando vagas diferentes.
+
+O teste percorreu páginas sucessivas, comparando os links encontrados em cada página com os links já identificados anteriormente.
+
+### Arquivo utilizado
+
+`src/coleta/05_descobrir_ultima_pagina_programathor.py`
+
+### Critérios de parada
+
+O script foi configurado para interromper a execução quando ocorresse uma das seguintes situações:
+
+* página sem links de vagas;
+* página contendo somente links já identificados;
+* erro de acesso;
+* alcance do limite máximo de 50 páginas.
+
+O limite de 50 páginas foi utilizado como medida de segurança para evitar uma execução excessivamente longa.
+
+### Resultado do teste
+
+* páginas testadas: 50;
+* última página testada com vagas novas: 50;
+* URLs únicas encontradas: 748;
+* página sem vagas encontrada: não;
+* página totalmente repetida encontrada: não;
+* última página real da plataforma identificada: não.
+
+A página 50 ainda apresentou links de vagas que não haviam aparecido nas páginas anteriores. Portanto, o teste não identificou o final real da paginação.
+
+O resultado permite afirmar que, no momento da execução, a plataforma possuía pelo menos 50 páginas de anúncios acessíveis e pelo menos 748 URLs únicas de vagas.
+
+Não é correto afirmar que a ProgramaThor possuía exatamente 50 páginas, pois a execução foi encerrada pelo limite de segurança configurado no script, e não pela ausência de novas vagas.
+
+### Diferença entre o total esperado e o encontrado
+
+Caso todas as 50 páginas apresentassem exatamente 15 vagas diferentes, o total teórico seria de 750 URLs.
+
+Entretanto, foram encontradas 748 URLs únicas. Essa diferença pode estar relacionada a:
+
+* repetição de algum anúncio entre páginas;
+* página com menos de 15 vagas;
+* alteração da listagem durante a execução;
+* movimentação ou remoção de anúncios enquanto o teste era realizado.
+
+Como o script utiliza um conjunto de URLs únicas, possíveis repetições são eliminadas automaticamente.
+
+### Decisão de escopo
+
+Apesar de terem sido identificadas 748 URLs únicas nas primeiras 50 páginas, decidiu-se não coletar imediatamente todos os anúncios.
+
+A coleta completa aumentaria significativamente:
+
+* o tempo de execução;
+* a quantidade de requisições;
+* o volume de falhas a serem verificadas;
+* o trabalho de validação;
+* o esforço necessário para rotulagem manual;
+* o risco de desequilíbrio entre as categorias.
+
+Como próxima etapa, será realizada uma coleta ampliada e controlada de aproximadamente 20 páginas, com potencial de gerar até cerca de 300 URLs.
+
+Esse volume será utilizado para avaliar:
+
+* qualidade da coleta em escala maior;
+* quantidade de registros indisponíveis;
+* ocorrência de duplicidades;
+* distribuição das vagas por área;
+* diversidade das categorias propostas;
+* necessidade de inclusão de uma segunda fonte;
+* viabilidade de uma futura classificação supervisionada.
+
+### Limitação temporal
+
+A quantidade de páginas e anúncios pode mudar ao longo do tempo, pois novas vagas podem ser publicadas e anúncios antigos podem ser removidos.
+
+Dessa forma, o resultado de 748 URLs representa um recorte da plataforma na data de execução do teste.
