@@ -8,30 +8,64 @@ CAMINHO_ARQUIVO = (
     PASTA_PROJETO
     / "data"
     / "samples"
-    / "programathor_amostra_15_vagas.csv"
+    / "programathor_amostra_45_vagas.csv"
 )
+
+
+# ============================================================
+# CARREGAMENTO DA BASE
+# ============================================================
 
 df = pd.read_csv(CAMINHO_ARQUIVO)
 
+# Primeiro separamos as vagas válidas e as vagas com erro.
+df_validas = df[df["erro"].isna()].copy()
+df_com_erro = df[df["erro"].notna()].copy()
+
+
 print("Base carregada com sucesso!")
-print("Quantidade de linhas:", df.shape[0])
+print("Quantidade total de linhas:", df.shape[0])
 print("Quantidade de colunas:", df.shape[1])
+
+
+# ============================================================
+# COLUNAS DA BASE
+# ============================================================
 
 print("\nColunas da base:")
 
 for coluna in df.columns:
     print("-", coluna)
 
-print("\nValores vazios por coluna:")
-print(df.isna().sum())
 
-quantidade_urls_duplicadas = df["url"].duplicated().sum()
+# ============================================================
+# VALORES VAZIOS NAS VAGAS VÁLIDAS
+# ============================================================
+
+print("\nValores vazios nas vagas válidas:")
+print(df_validas.isna().sum())
+
+
+# ============================================================
+# URLs DUPLICADAS
+# ============================================================
+
+quantidade_urls_duplicadas = (
+    df["url"]
+    .duplicated()
+    .sum()
+)
 
 print("\nQuantidade de URLs duplicadas:")
 print(quantidade_urls_duplicadas)
 
+
+# ============================================================
+# SALÁRIOS NÃO ESPECIFICADOS
+# ============================================================
+
 salarios_nao_especificados = (
-    df["salario"]
+    df_validas["salario"]
     .fillna("")
     .str.lower()
     .str.contains("não especificado")
@@ -41,22 +75,41 @@ salarios_nao_especificados = (
 print("\nQuantidade de salários não especificados:")
 print(salarios_nao_especificados)
 
-df["tamanho_requisitos"] = (
-    df["requisitos"]
+if len(df_validas) > 0:
+    percentual_salarios_nao_especificados = (
+        salarios_nao_especificados
+        / len(df_validas)
+        * 100
+    )
+
+    print(
+        "Percentual de salários não especificados:",
+        round(percentual_salarios_nao_especificados, 2),
+        "%"
+    )
+
+
+# ============================================================
+# TAMANHO DOS TEXTOS
+# ============================================================
+
+df_validas["tamanho_requisitos"] = (
+    df_validas["requisitos"]
     .fillna("")
     .str.len()
 )
 
-df["tamanho_atividades"] = (
-    df["atividades"]
+df_validas["tamanho_atividades"] = (
+    df_validas["atividades"]
     .fillna("")
     .str.len()
 )
+
 
 print("\nMenores textos de requisitos:")
 
 print(
-    df[
+    df_validas[
         [
             "titulo",
             "tamanho_requisitos"
@@ -64,18 +117,24 @@ print(
     ]
     .sort_values("tamanho_requisitos")
     .head()
+    .to_string(index=False)
 )
 
-problemas = df[
-    (df["titulo"].isna())
-    | (df["empresa"].isna())
-    | (df["skills"].isna())
-    | (df["requisitos"].isna())
-    | (df["tamanho_requisitos"] < 50)
-    | (df["erro"].notna())
+
+# ============================================================
+# PROBLEMAS ESTRUTURAIS NAS VAGAS VÁLIDAS
+# ============================================================
+
+problemas = df_validas[
+    (df_validas["titulo"].isna())
+    | (df_validas["empresa"].isna())
+    | (df_validas["skills"].isna())
+    | (df_validas["requisitos"].isna())
+    | (df_validas["tamanho_requisitos"] < 50)
 ]
 
-print("\nVagas com possíveis problemas:")
+
+print("\nVagas com possíveis problemas estruturais:")
 
 if problemas.empty:
     print("Nenhum problema estrutural encontrado.")
@@ -87,8 +146,49 @@ else:
                 "empresa",
                 "skills",
                 "tamanho_requisitos",
-                "erro",
                 "url"
+            ]
+        ].to_string(index=False)
+    )
+
+
+# ============================================================
+# RESUMO DA COLETA
+# ============================================================
+
+print("\nResumo final da coleta:")
+print("Total de URLs encontradas:", len(df))
+print("Vagas válidas para análise:", len(df_validas))
+print("Vagas indisponíveis:", len(df_com_erro))
+
+if len(df) > 0:
+    taxa_sucesso = (
+        len(df_validas)
+        / len(df)
+        * 100
+    )
+
+    print(
+        "Taxa de sucesso:",
+        round(taxa_sucesso, 2),
+        "%"
+    )
+
+
+# ============================================================
+# VAGAS INDISPONÍVEIS
+# ============================================================
+
+print("\nVagas indisponíveis na fonte:")
+
+if df_com_erro.empty:
+    print("Nenhuma vaga indisponível.")
+else:
+    print(
+        df_com_erro[
+            [
+                "url",
+                "erro"
             ]
         ].to_string(index=False)
     )
