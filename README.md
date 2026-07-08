@@ -1,4 +1,3 @@
-# Tech Jobs Scraping Pipeline
 
 Pipeline em Python para coleta, validação, limpeza e estruturação de vagas de tecnologia por web scraping.
 
